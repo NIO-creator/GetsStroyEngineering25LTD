@@ -1,0 +1,7 @@
+{
+  "name": "GetsStroy Engineering 25 LTD",
+  "description": "Professional construction company website for GetsStroy Engineering 25 LTD featuring multilingual support, service showcase, and an AI-powered assistant.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
