@@ -28,10 +28,9 @@ jobs:
         run: npm install
 
       - name: Build
-        # ВАЖНО: Добавяме фалшив API ключ, за да не "гърми" vite.config.ts
         env:
-            GEMINI_API_KEY: "build_placeholder_key"
-        # Използваме npx vite build за по-сигурно
+            # Това казва на GitHub да вземе истинския ключ от тайника
+            GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: npx vite build
 
       - name: Upload artifact
