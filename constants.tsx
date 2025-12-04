@@ -78,7 +78,14 @@ export const TRANSLATIONS: TranslationDictionary = {
   contact_email: { bg: 'Имейл', en: 'Email' },
   contact_message: { bg: 'Съобщение', en: 'Message' },
   contact_send: { bg: 'Изпрати', en: 'Send Message' },
-  contact_address: { bg: 'гр. София, бул. България 1', en: 'Sofia, 1 Bulgaria Blvd' },
+  sending: { bg: 'Изпращане...', en: 'Sending...' },
+  
+  // UPDATED ADDRESS
+  contact_address: { bg: 'гр. Казанлък, ул. Княз Александър Бетенберг 221', en: 'str. Kiaz Al. Batenberg 221, Kazanlak city' },
+  
+  // ADDED NEW CONTACT INFO VARIABLES
+  contact_phone_display: { bg: '+359 898 696 213', en: '+359 898 696 213' },
+  contact_email_display: { bg: 'getsstroy@abv.bg', en: 'getsstroy@abv.bg' },
   
   footer_rights: { bg: 'Всички права запазени.', en: 'All rights reserved.' },
 
