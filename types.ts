@@ -1,3 +1,5 @@
+import React from 'react';
+
 export type Language = 'bg' | 'en';
 
 export interface NavItem {
@@ -19,7 +21,9 @@ export interface ChatMessage {
   timestamp: Date;
 }
 
-export interface TranslationDictionary {
+// I renamed this from 'TranslationDictionary' to 'TranslationStructure' 
+// to match the code in constants.tsx
+export interface TranslationStructure {
   [key: string]: {
     bg: string;
     en: string;
