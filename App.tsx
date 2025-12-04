@@ -1,24 +1,38 @@
 import React, { useState, useRef } from 'react';
 import emailjs from '@emailjs/browser';
-import { TRANSLATIONS, NAV_ITEMS, SERVICES, Icons } from './constants';
+import { TRANSLATIONS, NAV_ITEMS, SERVICES } from './constants';
 import { Language } from './types';
 import ChatWidget from './components/ChatWidget';
 
 function App() {
   const [lang, setLang] = useState<Language>('bg');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  
+
   // --- EMAILJS CONFIGURATION ---
-  // REPLACE THESE VALUES WITH YOUR ACTUAL KEYS FROM EMAILJS DASHBOARD
-  const YOUR_SERVICE_ID = 'YOUR_SERVICE_ID';
-  const YOUR_TEMPLATE_ID = 'YOUR_TEMPLATE_ID';
-  const YOUR_PUBLIC_KEY = 'YOUR_PUBLIC_KEY';
+  const YOUR_SERVICE_ID = 'service_uwhwphv';
+  const YOUR_TEMPLATE_ID = 'template_k1siaag';
+  const YOUR_PUBLIC_KEY = 'mQBdOwMhcshQnhmqI';
 
   // Form State
   const form = useRef<HTMLFormElement>(null);
   const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
 
   const t = TRANSLATIONS;
+
+  // --- GALLERY CONFIGURATION ---
+  // Updated to look for .png files in the 'gallery' folder
+  // FIXED: Using './' to force relative paths for GitHub Pages
+  const GALLERY_ITEMS = [
+    { id: 1, type: '', title: 'Project 01', w: 600, h: 400, src: './gallery/1.png' },
+    { id: 2, type: 'vertical', title: 'Project 02', w: 400, h: 800, src: './gallery/2.png' },
+    { id: 3, type: '', title: 'Project 03', w: 600, h: 400, src: './gallery/3.png' },
+    { id: 4, type: 'horizontal', title: 'Project 04', w: 800, h: 400, src: './gallery/4.png' },
+    { id: 5, type: '', title: 'Project 05', w: 600, h: 400, src: './gallery/5.png' },
+    { id: 6, type: 'vertical', title: 'Project 06', w: 400, h: 800, src: './gallery/6.png' },
+    // Using 1.png and 2.png as fallbacks for the last two items if 7.png and 8.png don't exist yet
+    { id: 7, type: '', title: 'Project 07', w: 600, h: 400, src: './gallery/1.png' },
+    { id: 8, type: '', title: 'Project 08', w: 600, h: 400, src: './gallery/2.png' },
+  ];
 
   const toggleLang = () => {
     setLang(prev => prev === 'bg' ? 'en' : 'bg');
@@ -47,9 +61,7 @@ function App() {
       .then((result) => {
           console.log(result.text);
           setStatus('success');
-          // Clear the form
           if (form.current) form.current.reset();
-          // Reset status message after 3 seconds
           setTimeout(() => setStatus('idle'), 3000);
       }, (error) => {
           console.log(error.text);
@@ -64,7 +76,6 @@ function App() {
         <div className="container mx-auto px-4 h-20 flex justify-between items-center">
           <div className="flex items-center space-x-2">
             <div className="bg-gs-dark p-2 rounded">
-               {/* Logo Placeholder */}
                <span className="text-gs-accent font-bold text-xl">GS25</span>
             </div>
             <div className="hidden md:block">
@@ -199,34 +210,25 @@ function App() {
           </h3>
 
           <div className="collage-grid gap-4">
-            {/* Generating 8 placeholder items mixed horizontal/vertical */}
-            <div className="collage-item relative group overflow-hidden rounded bg-gray-200">
-               <img src="https://picsum.photos/600/400?random=1" alt="Project 1" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-               <div className="absolute inset-0 bg-gs-dark/0 group-hover:bg-gs-dark/50 transition-colors flex items-center justify-center">
-                  <span className="text-white opacity-0 group-hover:opacity-100 font-bold">Project 01</span>
-               </div>
-            </div>
-            <div className="collage-item vertical relative group overflow-hidden rounded bg-gray-200">
-               <img src="https://picsum.photos/400/800?random=2" alt="Project 2" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-            </div>
-             <div className="collage-item relative group overflow-hidden rounded bg-gray-200">
-               <img src="https://picsum.photos/600/400?random=3" alt="Project 3" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-            </div>
-             <div className="collage-item horizontal relative group overflow-hidden rounded bg-gray-200">
-               <img src="https://picsum.photos/800/400?random=4" alt="Project 4" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-            </div>
-             <div className="collage-item relative group overflow-hidden rounded bg-gray-200">
-               <img src="https://picsum.photos/600/400?random=5" alt="Project 5" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-            </div>
-             <div className="collage-item vertical relative group overflow-hidden rounded bg-gray-200">
-               <img src="https://picsum.photos/400/800?random=6" alt="Project 6" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-            </div>
-             <div className="collage-item relative group overflow-hidden rounded bg-gray-200">
-               <img src="https://picsum.photos/600/400?random=7" alt="Project 7" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-            </div>
-             <div className="collage-item relative group overflow-hidden rounded bg-gray-200">
-               <img src="https://picsum.photos/600/400?random=8" alt="Project 8" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-            </div>
+            {GALLERY_ITEMS.map((project) => (
+              <div key={project.id} className={`collage-item ${project.type} relative group overflow-hidden rounded bg-gray-200`}>
+                <img 
+                  src={project.src} 
+                  alt={project.title} 
+                  loading="lazy" 
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                  // Fallback to placeholder if your photo isn't uploaded yet
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    console.error('Image failed to load:', project.src);
+                    target.src = `https://picsum.photos/${project.w}/${project.h}?random=${project.id}`;
+                  }}
+                />
+                <div className="absolute inset-0 bg-gs-dark/0 group-hover:bg-gs-dark/50 transition-colors flex items-center justify-center">
+                  <span className="text-white opacity-0 group-hover:opacity-100 font-bold">{project.title}</span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -271,11 +273,13 @@ function App() {
                   </div>
                   <div className="flex items-center space-x-3">
                     <span className="text-gs-accent">📞</span>
-                    <span className="text-sm text-gray-300">+359 888 123 456</span>
+                    {/* Using new constant for Phone */}
+                    <span className="text-sm text-gray-300">{t['contact_phone_display'][lang]}</span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <span className="text-gs-accent">✉️</span>
-                    <span className="text-sm text-gray-300">office@getsstroy.bg</span>
+                    {/* Using new constant for Email */}
+                    <span className="text-sm text-gray-300">{t['contact_email_display'][lang]}</span>
                   </div>
                 </div>
               </div>
@@ -369,4 +373,3 @@ function App() {
 }
 
 export default App;
-// Forced update
