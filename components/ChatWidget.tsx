@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle, X, Send, Loader2 } from 'lucide-react';
 import { Language, ChatMessage } from '../types';
+// FIX: The import name below MUST be 'sendMsgToGemini' to match the service file
 import { sendMsgToGemini } from '../services/geminiService';
 
 interface ChatWidgetProps {
@@ -47,7 +48,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ lang }) => {
     setIsLoading(true);
 
     try {
-      // UPDATED LINE: Passing 'lang' so the AI knows which system instruction to use
+      // FIX: Calling the correct function name
       const responseText = await sendMsgToGemini(input, lang);
       
       const botMsg: ChatMessage = {
