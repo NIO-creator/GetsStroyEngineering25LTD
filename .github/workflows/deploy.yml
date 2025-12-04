@@ -28,11 +28,11 @@ jobs:
         run: npm install
 
       - name: Build
-        env:
-            # CRITICAL FIX: The variable name MUST start with VITE_ for your code to see it.
-            # Only change the right side ${{ secrets.X }} if your secret has a different name in GitHub Settings.
-            VITE_GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        # CRITICAL FIX: The build step now passes the secret directly as an environment variable (VITE_GEMINI_API_KEY)
+        # The key is securely retrieved from the repository's secrets store.
         run: npx vite build
+        env:
+          VITE_GEMINI_API_KEY: ${{ secrets.VITE_GEMINI_API_KEY }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
