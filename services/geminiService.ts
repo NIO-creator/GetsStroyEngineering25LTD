@@ -1,7 +1,8 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { Language } from "../types";
+// We use import.meta.env to access environment variables in Vite
+const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+import { Language } from '../types';
 
-// Helper to get system prompt based on language
+// 1. Restore the Personality Logic
 const getSystemInstruction = (lang: Language): string => {
   const contactDetailsBg = `
   Детайли за контакт:
@@ -20,68 +21,69 @@ const getSystemInstruction = (lang: Language): string => {
   if (lang === 'bg') {
     return `Ти си полезен AI асистент за строителна фирма "Гецстрой Енжинеринг 25 ООД". 
     Услугите включват: Покривни ремонти, безшевни улуци, водосточни тръби, фасадни панели. 
-    
+     
     ВАЖНО: Ако потребителят попита за контакти или иска оферта, предостави следните детайли:
     ${contactDetailsBg}
-    
+     
     Силно насърчавай клиентите да попълнят формата за контакт по-горе на страницата за най-бърз отговор.
     Отговаряй учтиво, професионално и кратко.`;
   } else {
     return `You are a helpful AI assistant for the construction company "GetsStroy Engineering 25 LTD". 
     Services include: Roof repairs, seamless gutters, downspouts, facade panels. 
-    
+     
     IMPORTANT: If the user asks for contact info or a quote, provide these details:
     ${contactDetailsEn}
-    
+     
     Strongly encourage clients to fill out the contact form above on the page for the fastest response.
     Answer politely, professionally, and concisely.`;
   }
 };
 
-export const sendMessageToGemini = async (
-  message: string, 
-  history: { role: string; parts: { text: string }[] }[],
-  lang: Language
-): Promise<string> => {
-  
-  // --- CONFIGURATION ---
-  const apiKey = 'AIzaSyDKS4WCYWdEhd4wxC8l17nfM15ihygiOEc';
-  
-  if (!apiKey) {
-    return lang === 'bg' 
-      ? "Грешка: Липсва API ключ. Моля, добавете го в кода." 
-      : "Error: Missing API key. Please add it to the code.";
+// 2. The Robust "Fetch" Function (Crash-Proof + Personality)
+// Note: We need to pass 'lang' here now to get the right personality
+export const sendMsgToGemini = async (message: string, lang: Language = 'bg') => {
+  if (!API_KEY) {
+    console.error("Gemini API key is missing.");
+    return "Error: API key missing.";
   }
 
+  const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+
   try {
-    const genAI = new GoogleGenerativeAI(apiKey);
-    
-    // Using stable version to prevent 404 errors (Fixed from 'gemini-1.5-flash')
-    const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-flash-001",
-      systemInstruction: getSystemInstruction(lang),
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        // RESTORED: This tells the AI who it is (Personality)
+        systemInstruction: {
+          parts: [{ text: getSystemInstruction(lang) }]
+        },
+        // SAFE CONTENTS: We send only the current user message to avoid the "First content must be user" crash.
+        // The system instruction provides enough context for a simple Q&A.
+        contents: [
+          {
+            role: "user",
+            parts: [{ text: message }],
+          },
+        ],
+      }),
     });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
     
-    // Convert history to the format Google Generative AI expects
-    const chatHistory = history.map(h => ({
-      role: h.role === 'model' ? 'model' : 'user',
-      parts: h.parts
-    }));
+    const botResponse =
+      data.candidates?.[0]?.content?.parts?.[0]?.text ||
+      "Sorry, I couldn't understand that.";
 
-    const chat = model.startChat({
-      history: chatHistory,
-    });
-
-    const result = await chat.sendMessage(message);
-    const response = await result.response;
-    const text = response.text();
-
-    return text || (lang === 'bg' ? 'Съжалявам, не можах да генерирам отговор.' : 'Sorry, I could not generate a response.');
-
+    return botResponse;
   } catch (error) {
-    console.error("Gemini API Error:", error);
-    return lang === 'bg' 
-      ? "Възникна грешка при свързването с AI услугата." 
-      : "An error occurred connecting to the AI service.";
+    console.error("Error communicating with Gemini:", error);
+    return "Sorry, something went wrong. Please try again later.";
   }
 };
