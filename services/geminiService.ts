@@ -1,16 +1,40 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { Language } from "../types";
 
 // Helper to get system prompt based on language
 const getSystemInstruction = (lang: Language): string => {
+  const contactDetailsBg = `
+  Детайли за контакт:
+  - Адрес: гр. Казанлък, ул. Княз Александър Бетенберг 221
+  - Телефон: +359 898 696 213
+  - Имейл: getsstroy@abv.bg
+  `;
+
+  const contactDetailsEn = `
+  Contact Details:
+  - Address: str. Kiaz Al. Batenberg 221, Kazanlak city
+  - Phone: +359 898 696 213
+  - Email: getsstroy@abv.bg
+  `;
+
   if (lang === 'bg') {
     return `Ти си полезен AI асистент за строителна фирма "Гецстрой Енжинеринг 25 ООД". 
     Услугите включват: Покривни ремонти, безшевни улуци, водосточни тръби, фасадни панели. 
-    Отговаряй учтиво, професионално и кратко. Насърчавай клиентите да се свържат за оферта.`;
+    
+    ВАЖНО: Ако потребителят попита за контакти или иска оферта, предостави следните детайли:
+    ${contactDetailsBg}
+    
+    Силно насърчавай клиентите да попълнят формата за контакт по-горе на страницата за най-бърз отговор.
+    Отговаряй учтиво, професионално и кратко.`;
   } else {
     return `You are a helpful AI assistant for the construction company "GetsStroy Engineering 25 LTD". 
     Services include: Roof repairs, seamless gutters, downspouts, facade panels. 
-    Answer politely, professionally, and concisely. Encourage clients to contact for a quote.`;
+    
+    IMPORTANT: If the user asks for contact info or a quote, provide these details:
+    ${contactDetailsEn}
+    
+    Strongly encourage clients to fill out the contact form above on the page for the fastest response.
+    Answer politely, professionally, and concisely.`;
   }
 };
 
@@ -20,42 +44,39 @@ export const sendMessageToGemini = async (
   lang: Language
 ): Promise<string> => {
   
-  // NOTE: In a real production app, API keys should be proxied through a backend.
-  // For this static demo, we access it via process.env.API_KEY as per instructions.
-  const apiKey = process.env.API_KEY;
+  // --- CONFIGURATION ---
+  const apiKey = 'AIzaSyDKS4WCYWdEhd4wxC8l17nfM15ihygiOEc';
   
   if (!apiKey) {
     return lang === 'bg' 
-      ? "Грешка: Липсва API ключ." 
-      : "Error: Missing API key.";
+      ? "Грешка: Липсва API ключ. Моля, добавете го в кода." 
+      : "Error: Missing API key. Please add it to the code.";
   }
 
   try {
-    const ai = new GoogleGenAI({ apiKey });
+    const genAI = new GoogleGenerativeAI(apiKey);
     
-    // We create a new model instance for each request to allow dynamic system instructions based on language
-    const model = 'gemini-2.5-flash';
+    // Using the flash model which is optimized for speed
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-1.5-flash",
+      systemInstruction: getSystemInstruction(lang),
+    });
     
-    // Using simple generateContent for single turn or manually managed history context
-    // Constructing the full context to send
-    const contents = [
-       ...history.map(h => ({
-         role: h.role === 'model' ? 'model' : 'user',
-         parts: h.parts
-       })),
-       { role: 'user', parts: [{ text: message }] }
-    ];
+    // Convert history to the format Google Generative AI expects
+    const chatHistory = history.map(h => ({
+      role: h.role === 'model' ? 'model' : 'user',
+      parts: h.parts
+    }));
 
-    const response = await ai.models.generateContent({
-      model: model,
-      contents: contents,
-      config: {
-        systemInstruction: getSystemInstruction(lang),
-        temperature: 0.7,
-      }
+    const chat = model.startChat({
+      history: chatHistory,
     });
 
-    return response.text || (lang === 'bg' ? 'Съжалявам, не можах да генерирам отговор.' : 'Sorry, I could not generate a response.');
+    const result = await chat.sendMessage(message);
+    const response = await result.response;
+    const text = response.text();
+
+    return text || (lang === 'bg' ? 'Съжалявам, не можах да генерирам отговор.' : 'Sorry, I could not generate a response.');
 
   } catch (error) {
     console.error("Gemini API Error:", error);
