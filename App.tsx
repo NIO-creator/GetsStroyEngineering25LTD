@@ -20,8 +20,8 @@ function App() {
   const t = TRANSLATIONS;
 
   // --- GALLERY CONFIGURATION ---
-  // Updated to look for .png files in the 'gallery' folder
-  // FIXED: Using './' to force relative paths for GitHub Pages
+  // Uses relative paths (./) to find images in 'public/gallery' on GitHub Pages
+  // Ensure files are named 1.png, 2.png... 8.png
   const GALLERY_ITEMS = [
     { id: 1, type: '', title: 'Project 01', w: 600, h: 400, src: './gallery/1.png' },
     { id: 2, type: 'vertical', title: 'Project 02', w: 400, h: 800, src: './gallery/2.png' },
@@ -29,7 +29,7 @@ function App() {
     { id: 4, type: 'horizontal', title: 'Project 04', w: 800, h: 400, src: './gallery/4.png' },
     { id: 5, type: '', title: 'Project 05', w: 600, h: 400, src: './gallery/5.png' },
     { id: 6, type: 'vertical', title: 'Project 06', w: 400, h: 800, src: './gallery/6.png' },
-    // Using 1.png and 2.png as fallbacks for the last two items if 7.png and 8.png don't exist yet
+    // Fallbacks to 1 and 2 if 7 and 8 don't exist yet
     { id: 7, type: '', title: 'Project 07', w: 600, h: 400, src: './gallery/1.png' },
     { id: 8, type: '', title: 'Project 08', w: 600, h: 400, src: './gallery/2.png' },
   ];
