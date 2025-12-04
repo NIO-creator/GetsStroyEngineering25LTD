@@ -273,12 +273,10 @@ function App() {
                   </div>
                   <div className="flex items-center space-x-3">
                     <span className="text-gs-accent">📞</span>
-                    {/* Using new constant for Phone */}
                     <span className="text-sm text-gray-300">{t['contact_phone_display'][lang]}</span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <span className="text-gs-accent">✉️</span>
-                    {/* Using new constant for Email */}
                     <span className="text-sm text-gray-300">{t['contact_email_display'][lang]}</span>
                   </div>
                 </div>
