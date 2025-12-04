@@ -36,8 +36,8 @@ export const sendMsgToGemini = async (message: string, lang: Language = 'bg') =>
     return "Error: API key missing.";
   }
 
-  // UPDATED: Using the specific pinned version '-001' which is often more stable than the alias
-  const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-001:generateContent?key=${API_KEY}`;
+  // FINAL FIX FOR 404: Switching to the widely supported stable model name 'gemini-pro'
+  const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`;
 
   try {
     const response = await fetch(API_URL, {
@@ -59,7 +59,6 @@ export const sendMsgToGemini = async (message: string, lang: Language = 'bg') =>
     });
 
     if (!response.ok) {
-      // Extended error logging to see exactly why Google rejected it
       const errorText = await response.text();
       console.error("Gemini API Error Details:", errorText);
       throw new Error(`HTTP error! status: ${response.status}`);
