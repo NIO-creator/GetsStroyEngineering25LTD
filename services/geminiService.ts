@@ -56,9 +56,9 @@ export const sendMessageToGemini = async (
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
     
-    // Using the flash model which is optimized for speed
+    // Using stable version to prevent 404 errors (Fixed from 'gemini-1.5-flash')
     const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-flash",
+      model: "gemini-1.5-flash-001",
       systemInstruction: getSystemInstruction(lang),
     });
     
