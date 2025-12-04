@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import emailjs from '@emailjs/browser';
 import { TRANSLATIONS, NAV_ITEMS, SERVICES, Icons } from './constants';
 import { Language } from './types';
 import ChatWidget from './components/ChatWidget';
@@ -6,6 +7,16 @@ import ChatWidget from './components/ChatWidget';
 function App() {
   const [lang, setLang] = useState<Language>('bg');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  // --- EMAILJS CONFIGURATION ---
+  // REPLACE THESE VALUES WITH YOUR ACTUAL KEYS FROM EMAILJS DASHBOARD
+  const YOUR_SERVICE_ID = 'YOUR_SERVICE_ID';
+  const YOUR_TEMPLATE_ID = 'YOUR_TEMPLATE_ID';
+  const YOUR_PUBLIC_KEY = 'YOUR_PUBLIC_KEY';
+
+  // Form State
+  const form = useRef<HTMLFormElement>(null);
+  const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
 
   const t = TRANSLATIONS;
 
@@ -23,6 +34,27 @@ function App() {
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
     }
+  };
+
+  const sendEmail = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!form.current) return;
+
+    setStatus('sending');
+
+    emailjs.sendForm(YOUR_SERVICE_ID, YOUR_TEMPLATE_ID, form.current, YOUR_PUBLIC_KEY)
+      .then((result) => {
+          console.log(result.text);
+          setStatus('success');
+          // Clear the form
+          if (form.current) form.current.reset();
+          // Reset status message after 3 seconds
+          setTimeout(() => setStatus('idle'), 3000);
+      }, (error) => {
+          console.log(error.text);
+          setStatus('error');
+      });
   };
 
   return (
@@ -248,32 +280,68 @@ function App() {
                 </div>
               </div>
               <div className="mt-8">
-                 {/* Social Placeholders */}
-                 <div className="flex space-x-4">
-                   <div className="w-8 h-8 bg-white/20 rounded-full hover:bg-gs-accent cursor-pointer transition-colors"></div>
-                   <div className="w-8 h-8 bg-white/20 rounded-full hover:bg-gs-accent cursor-pointer transition-colors"></div>
-                   <div className="w-8 h-8 bg-white/20 rounded-full hover:bg-gs-accent cursor-pointer transition-colors"></div>
-                 </div>
+                  {/* Social Placeholders */}
+                  <div className="flex space-x-4">
+                    <div className="w-8 h-8 bg-white/20 rounded-full hover:bg-gs-accent cursor-pointer transition-colors"></div>
+                    <div className="w-8 h-8 bg-white/20 rounded-full hover:bg-gs-accent cursor-pointer transition-colors"></div>
+                    <div className="w-8 h-8 bg-white/20 rounded-full hover:bg-gs-accent cursor-pointer transition-colors"></div>
+                  </div>
               </div>
             </div>
 
             <div className="p-10 md:w-3/5">
-              <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+              <form ref={form} onSubmit={sendEmail} className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">{t['contact_name'][lang]}</label>
-                  <input type="text" className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-gs-accent focus:border-transparent outline-none bg-gray-50" />
+                  <input 
+                    type="text" 
+                    name="user_name"
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-gs-accent focus:border-transparent outline-none bg-gray-50" 
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">{t['contact_email'][lang]}</label>
-                  <input type="email" className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-gs-accent focus:border-transparent outline-none bg-gray-50" />
+                  <input 
+                    type="email" 
+                    name="user_email" 
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-gs-accent focus:border-transparent outline-none bg-gray-50" 
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">{t['contact_message'][lang]}</label>
-                  <textarea rows={4} className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-gs-accent focus:border-transparent outline-none bg-gray-50"></textarea>
+                  <textarea 
+                    name="message" 
+                    rows={4} 
+                    required
+                    className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-gs-accent focus:border-transparent outline-none bg-gray-50"
+                  ></textarea>
                 </div>
-                <button type="submit" className="w-full bg-gs-dark text-white font-bold py-3 rounded hover:bg-opacity-90 transition-colors">
-                  {t['contact_send'][lang]}
+                
+                <button 
+                  type="submit" 
+                  disabled={status === 'sending'}
+                  className={`w-full font-bold py-3 rounded transition-colors ${
+                    status === 'sending' 
+                      ? 'bg-gray-400 cursor-not-allowed text-white' 
+                      : 'bg-gs-dark text-white hover:bg-opacity-90'
+                  }`}
+                >
+                  {status === 'sending' ? 'Sending...' : t['contact_send'][lang]}
                 </button>
+
+                {status === 'success' && (
+                  <p className="text-green-600 text-center text-sm font-bold mt-2">
+                    {lang === 'bg' ? 'Съобщението е изпратено успешно!' : 'Message sent successfully!'}
+                  </p>
+                )}
+                {status === 'error' && (
+                  <p className="text-red-600 text-center text-sm font-bold mt-2">
+                    {lang === 'bg' ? 'Грешка при изпращане. Моля, опитайте отново.' : 'Error sending message. Please try again.'}
+                  </p>
+                )}
+
               </form>
             </div>
 
