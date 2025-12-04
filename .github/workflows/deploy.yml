@@ -29,8 +29,9 @@ jobs:
 
       - name: Build
         env:
-            # Това казва на GitHub да вземе истинския ключ от тайника
-            GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+            # CRITICAL FIX: The variable name MUST start with VITE_ for your code to see it.
+            # Only change the right side ${{ secrets.X }} if your secret has a different name in GitHub Settings.
+            VITE_GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: npx vite build
 
       - name: Upload artifact
